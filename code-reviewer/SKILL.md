@@ -2,23 +2,25 @@
 name: code-reviewer
 description: 对产生的 Git Diff 进行机器级审计。根据预设的拦截底座产生检验报告，决定驳回或生成 Commit。对标 CodiumAI 的 PR-Agent。
 ---
-# Code Reviewer (代码审查员)
+# Code Reviewer (最终代码审计官)
 
-## Core Purpose (核心目标)
-此技能作为代码提交流水线的最后一环，进行自动化的**只读 (Read-Only)** 代码审查。它的职责是拦截大模型常见的偷懒行为（魔法值、写瞎眼中文、乱用 `any`），坚决捍卫代码底线！
+## Core Purpose
+此技能作为代码提交流水线的最后一环，进行自动化的**只读 (Read-Only)** 代码审查。它的职责是防守底线，坚决拦截硬编码 IP、密码泄露、中文字符错乱以及错误的国际化 i18n 写法。
 
-## 武器库执行令 (Scripts Payload)
-你被剥夺了仅凭肉眼阅读代码的权力，你必须依靠**生杀予夺的底层静态断言脚本**！
+## Context & Components
+你被剥夺了仅凭肉眼阅读巨大代码库的权力，你必须依靠底层配套的静态层级扫描验证：本技能目录下的 `scripts/diff_linter.js`。
 
-👉 **运行方式**：
-在项目根目录强制运行：
-```bash
-node C:\Users\mr_zh\.gemini\antigravity\skills\code-reviewer\scripts\diff_linter.js
-```
+## Instructions
+当你被要求 Review、审查、或提交代码之前，请严格按照以下步骤操作：
 
-## Workflow (工作流)
-1. **触发法庭仪轨 (Run Diff Linter)**：调用上述脚手架命令 `diff_linter.js`，脚本会自动拦截当前的变动（需存在未 commit 的修改）。
-2. **分析判决 (Analyze Judgement)**：
-   - 🔴 如果脚本返回了 `fail` 和一大串 Violations：说明执行 AI (task-coder) 没守规矩！你需要立刻提取脚本中的错误行号和原因，严厉驳回并勒令重做。
-   - 🟢 如果脚本返回 `pass`：确认完全合规！
-3. **出具结果 (Output Results)**：若合规通过，请生成一条极其标准的 Conventional Commits 规范的**全英文 Commit Message**，交由人类。如果有不合规的，将其罗列清楚。
+1. **执行静态差异审查 (Execute Diff Linting)**：使用终端命令执行本技能所在的目录下的底层脚本：`scripts/diff_linter.js`。脚本会自动提取当前的 Git 差异（Uncommitted Changes）并匹配核心约束。
+2. **解析审查报告 (Analyze Linter Output)**：
+   - 🔴 如果脚本日志打印了 `status: fail` 及其附带的 Violations (违规清单)：这说明代码存在违规项。必须提取报错的具体行号和错误原因，打回给 `task-coder` 要求重新修改。
+   - 🟢 如果脚本打印 `status: pass`：确认代码合规，允许进入下一步。
+3. **出具最终结果 (Generate Commit Info)**：如果在审核全通过的情况下，请直接输出一条符合 Conventional Commits 标准的英文 Commit Message，例如 `feat(module): description...`。
+
+## Example Usage
+用户：“请审查一下当前的改动，准备提交。”
+助手：“我正在调用代码审计辅助脚本...”
+(脚本运行 diff_linter.js 后发现违规项)
+助手：“❌ 审计未通过：在 `config.ts` 的第 30 行检测到硬编码的配置项。请 @task-coder 立刻将其修改为从环境变量读取。”
