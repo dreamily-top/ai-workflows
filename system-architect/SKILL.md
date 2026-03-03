@@ -9,6 +9,7 @@ description: 分析需求和存储库地图，生成技术蓝图、API 契约以
 
 ## Workflow (工作流)
 1. **校验上下文 (Review Context)**：分析用户需求与现有的存储库结构地图，绝不凭空捏造不存在的模块。
+1.5. **读取全局规约 (Read Conventions)**：在开始架构设计前，**必须**使用 view_file 工具读取项目根目录的 `.ai/conventions.md`（或 `-zh.md` 版本），并在设计中严格贯彻其架构与工程约束。
 2. **设计契约 (Design Contracts)**：定义数据 Schema（如 Zod / Prisma 表结构）、TypeScript 前端组件 Props 接口，以及前后端 API 交互路由。
 3. **锁定修改边界 (Specify File Targets)**：产出一份极为严谨的即将被修改的**文件绝对路径清单**（精确指明：改动哪些，新建哪些）。
 4. **输出设计文档 (Output Design Document)**：将上述内容整合生成一份标准 Markdown 格式的《技术契约与架构设计书》。

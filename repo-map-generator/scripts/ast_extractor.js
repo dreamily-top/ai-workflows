@@ -5,19 +5,46 @@ function extractSignatures(filePath) {
     const content = fs.readFileSync(filePath, 'utf-8');
     const signatures = [];
     const lines = content.split('\n');
+    const ext = path.extname(filePath).toLowerCase();
 
-    // Lightweight Regex-based signature extractor (fallback when full AST isn't strictly needed)
-    const regexes = [
-        /(?:export\s+)?(?:default\s+)?class\s+\w+(?:\s+extends\s+\w+)?(?:\s+implements\s+[\w\s,]+)?/g,
-        /(?:export\s+)?(?:default\s+)?interface\s+\w+/g,
-        /(?:export\s+)?type\s+\w+\s*=/g,
-        /(?:export\s+)?(?:default\s+)?function\s+\w+\s*\([^)]*\)\s*(?::\s*[^\{]+)?/g,
-        /(?:export\s+)?const\s+\w+\s*=\s*(?:async\s*)?(?:\([^)]*\)|[a-zA-Z0-9_]+)\s*=>/g
-    ];
+    const regexMap = {
+        '.ts': [
+            /(?:export\s+)?(?:default\s+)?class\s+\w+(?:\s+extends\s+\w+)?(?:\s+implements\s+[\w\s,]+)?/g,
+            /(?:export\s+)?(?:default\s+)?interface\s+\w+/g,
+            /(?:export\s+)?type\s+\w+\s*=/g,
+            /(?:export\s+)?(?:default\s+)?function\s+\w+\s*\([^)]*\)/g,
+            /(?:export\s+)?const\s+\w+\s*=\s*(?:async\s*)?(?:\([^)]*\)|[a-zA-Z0-9_]+)\s*=>/g
+        ],
+        '.js': [
+            /(?:export\s+)?(?:default\s+)?class\s+\w+(?:\s+extends\s+\w+)?/g,
+            /(?:export\s+)?(?:default\s+)?function\s+\w+\s*\([^)]*\)/g,
+            /(?:export\s+)?const\s+\w+\s*=\s*(?:async\s*)?(?:\([^)]*\)|[a-zA-Z0-9_]+)\s*=>/g
+        ],
+        '.go': [
+            /^func\s+(?:\([^)]+\)\s+)?\w+\s*\([^)]*\)/g,
+            /^type\s+\w+\s+struct\b/g,
+            /^type\s+\w+\s+interface\b/g
+        ],
+        '.py': [
+            /^class\s+\w+(?:\([^)]*\))?:/g,
+            /^(?:async\s+)?def\s+\w+\s*\([^)]*\)/g
+        ],
+        '.java': [
+            /(?:public|private|protected)?\s*(?:static\s+)?(?:final\s+)?class\s+\w+/g,
+            /(?:public|private|protected)?\s*interface\s+\w+/g,
+            /(?:public|private|protected)\s+(?:static\s+)?(?:final\s+)?[\w<>\[\]]+\s+\w+\s*\(/g
+        ]
+    };
+
+    // For tsx and jsx, alias to ts and js
+    if (ext === '.tsx') regexMap['.tsx'] = regexMap['.ts'];
+    if (ext === '.jsx') regexMap['.jsx'] = regexMap['.js'];
+
+    const regexes = regexMap[ext] || [];
 
     lines.forEach((line, index) => {
         // Skip comment lines
-        if (line.trim().startsWith('//') || line.trim().startsWith('/*') || line.trim().startsWith('*')) return;
+        if (line.trim().startsWith('//') || line.trim().startsWith('/*') || line.trim().startsWith('*') || line.trim().startsWith('#')) return;
 
         for (const regex of regexes) {
             const match = line.match(regex);
@@ -30,7 +57,7 @@ function extractSignatures(filePath) {
     return signatures;
 }
 
-function walkDir(dir, extFilter = ['.ts', '.tsx', '.js', '.jsx']) {
+function walkDir(dir, extFilter = ['.ts', '.tsx', '.js', '.jsx', '.go', '.py', '.java']) {
     let results = [];
     if (!fs.existsSync(dir)) return results;
     const list = fs.readdirSync(dir);

@@ -47,6 +47,23 @@ function runChecks() {
                 if (/\bany\b/.test(content) && !content.includes('eslint-disable')) {
                     violations.push({ file: currentFile, line: currentLine, reason: 'Detected "any" type. You must strictly follow L1 contracts and define a proper TypeScript interface.' });
                 }
+
+                // 4. IP/Port 和硬编码 URL 拦截
+                if (/https?:\/\/[0-9a-zA-Z]|:\d{4,5}[^0-9]|\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/.test(content)) {
+                    if (!currentFile.includes('test') && !currentFile.includes('spec') && !currentFile.includes('example')) {
+                        violations.push({ file: currentFile, line: currentLine, reason: 'Hardcoded URL/IP/Port detected. Use environment variables defined in conventions.' });
+                    }
+                }
+
+                // 5. 密码与密钥硬编码拦截
+                if (/(?:password|secret|api_?key|token|credential)\s*[:=]\s*['"][^'"]+['"]/i.test(content)) {
+                    violations.push({ file: currentFile, line: currentLine, reason: 'Potential hardcoded secret detected. Use environment variables.' });
+                }
+
+                // 6. i18n 冗余写法拦截 (严禁 t('key', 'fallback') 写法)
+                if (/t\s*\(\s*['"][^'"]+['"]\s*,\s*['"][^'"]+['"]\s*\)/.test(content)) {
+                    violations.push({ file: currentFile, line: currentLine, reason: 'Redundant i18n translation fallback detected. Use pure keys only, e.g., t("error.notFound").' });
+                }
             } else if (!line.startsWith('-') && !line.startsWith('\\')) {
                 if (currentLine !== 0) currentLine++;
             }
