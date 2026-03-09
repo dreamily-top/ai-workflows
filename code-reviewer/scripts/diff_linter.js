@@ -31,7 +31,7 @@ function runChecks() {
 
                 // 1. 中文硬编码拦截 (全球化标准 + 纯英文注释规范)
                 // 哪怕是注释，也强制要求英文
-                if (/[\u4e00-\u9fa5]/.test(content)) {
+                if (/[\u4e00-\u9fa5]/.test(content) && !currentFile.includes('locales')) {
                     violations.push({ file: currentFile, line: currentLine, reason: 'Detected Chinese characters! All UI text must use i18n, and CODE COMMENTS must be strictly in English.' });
                 }
 

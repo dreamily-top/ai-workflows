@@ -14,10 +14,11 @@ description: 对产生的 Git Diff 进行机器级审计。根据预设的拦截
 当你被要求 Review、审查、或提交代码之前，请严格按照以下步骤操作：
 
 1. **执行静态差异审查 (Execute Diff Linting)**：使用终端命令执行本技能所在的目录下的底层脚本：`scripts/diff_linter.js`。脚本会自动提取当前的 Git 差异（Uncommitted Changes）并匹配核心约束。
-2. **解析审查报告 (Analyze Linter Output)**：
-   - 🔴 如果脚本日志打印了 `status: fail` 及其附带的 Violations (违规清单)：这说明代码存在违规项。必须提取报错的具体行号和错误原因，打回给 `task-coder` 要求重新修改。
-   - 🟢 如果脚本打印 `status: pass`：确认代码合规，允许进入下一步。
-3. **出具最终结果 (Generate Commit Info)**：如果在审核全通过的情况下，请直接输出一条符合 Conventional Commits 标准的英文 Commit Message，例如 `feat(module): description...`。
+2. **语义与坏味道审查 (Semantic & Smell Review)**：除了被动的脚本当底座，你还必须主动结合项目根目录的 `.ai/conventions.md`（或 `-zh.md`），对**变量命名规范**、**过长或过深的嵌套函数**、**生硬的硬编码逻辑**、以及**潜在的内存泄漏点**进行一次纯语义级别的强制 Review。
+3. **出具最终结果打回或通过 (Analyze All Outputs)**：
+   - 🔴 只要脚本日志打印了 `status: fail`，或者你在语义层面审查中发现明确违反了 `conventions.md` 的代码坏味道：必须提取错误行号和原因，输出 `[REVIEW_FAILED]` 并立即打回给 `task-coder` 要求重新修改。不允许妥协或放行。
+   - 🟢 当且仅当脚本 `status: pass` 且语义层面合规：确认代码合规并放行通过。
+4. **生成 Commit 提交 (Generate Commit Info)**：如果在审核全通过的情况下，请直接输出一条符合 Conventional Commits 标准的英文 Commit Message，例如 `feat(module): description...`。
 
 ## Example Usage
 用户：“请审查一下当前的改动，准备提交。”
