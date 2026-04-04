@@ -1,24 +1,15 @@
 ---
 name: repo-map-generator
-description: 提取存储库结构映射（AST/文件树），提供精确的上下文，避免加载完整文件内容。灵感来自 Aider 的 Repomap。
+description: 降级为辅助性深潜工具。仅针对特定模块提取抽象语法树（AST），用于辅助精细的系统设计，严禁用于项目整体宏观理解。
 ---
-# Repository Map Generator (多语言代码库地形扫描仪)
+# Repository Map Generator (AST 局部解析钻探机)
 
 ## Core Purpose
-此技能专用于在进行跨文件分析或大规模系统设计前，快速提取项目结构骨架（函数签名、类等）。**严禁采用全文抓取模式**，以此防止大模型注意力衰退和上下文 Token 的浪费。
-
-## Context & Components
-本技能利用内置的同目录底层脚本 `scripts/ast_extractor.js` 来完成静态扫图，目前支持解析 `.ts`, `.go`, `.py`, `.java` 等高频语言。
+此技能已经从"必经的全局扫描站"降级为"按需呼叫的局部侦察无人机"。它利用 AST（抽象语法树）为大模型提供精确到函数签名的文件结构，但为了避免 token 和时间浪费，它**只在明确缩小范围后使用**。
 
 ## Instructions
-当你被要求熟悉新项目、搜寻上下文或者提取架构依赖时，请严格按照以下步骤操作：
 
-1. **定位扫描区**：明确用户指令或你需要探索的目标目录相对路径。
-2. **召唤硬件级探测与实体固化**：调用命令行运行本技能所在目录的 `scripts/ast_extractor.js <目标目录> > .ai/tmp/current_repo_map.txt`。如果目录不存在请提前创建。强制作业到临时文件，形成实体接力棒。绝对禁止使用普通的内容搜索工具去瞎猜上下文。
-3. **组织分析结果**：读取生成的 `.ai/tmp/current_repo_map.txt` 文件，将抽象语法树（AST）进行快速排版，形成清晰的 `Repo Map` 响应。
-4. **传递上下文**：这张地图不仅供你个人查阅，更是下一步转交给 `system-architect` 设计契约时的基石。必须明确告知 `system-architect` 去读取 `.ai/tmp/current_repo_map.txt`。
-
-## Example Usage
-当用户说：“帮我梳理一下 apps/studio 里面的上下文。”
-你应当执行节点脚本 `node <当前技能目录>/scripts/ast_extractor.js ./apps/studio`。
-得到结果后，简洁明了地输出其树状概要。
+1. **克制调用 (Restraint)**：如果是想了解项目整体干嘛的，请调用 `project-context`。只有当 `system-architect` 或你在执行具体任务时，发现对某个局部目录内部到底导出了哪些钩子、函数接口两眼一抹黑时，才被允许启动此技能。
+2. **严控准星 (Targeted Scan)**：运行同层目录的 `scripts/ast_extractor.js <具体的子目录或具体文件>`。绝对不允许运行 `ast_extractor.js ./` 去扫根目录引发爆炸。
+3. **临时投递 (Volatile Output)**：结果可以导入 `.ai/tmp/local_map.txt`，供 `system-architect` 设计类图或组件契约时借鉴参考。
+4. **阅后即焚 (Ephemeral)**：明确告知系统该文件只服务于本次设计，不用留档。
