@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO=""
+REPO="mosshello/spec-os"
 VERSION="latest"
 TARGET="all"
 
@@ -25,11 +25,6 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
-
-if [[ -z "$REPO" ]]; then
-  echo "Usage: scripts/install-from-release.sh --repo owner/repo [--version v1.0.0] [--target all|codex|claude|cursor|gemini]" >&2
-  exit 1
-fi
 
 ASSET_NAME="spec-os-skills.zip"
 if [[ "$VERSION" == "latest" ]]; then
