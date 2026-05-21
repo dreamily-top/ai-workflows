@@ -1,0 +1,47 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build package
+        shell: pwsh
+        run: |
+          $packageRoot = "dist/spec-os-skills"
+          New-Item -ItemType Directory -Force -Path $packageRoot | Out-Null
+
+          $items = @(
+            "ace-programmer",
+            "project-context",
+            "system-architect",
+            "repo-map-generator",
+            "task-coder",
+            "code-reviewer",
+            "scripts",
+            "README.md",
+            "README_ZH.md"
+          )
+
+          foreach ($item in $items) {
+            Copy-Item -Path $item -Destination $packageRoot -Recurse -Force
+          }
+
+          Compress-Archive -Path "$packageRoot/*" -DestinationPath "dist/spec-os-skills.zip" -Force
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/spec-os-skills.zip
+          generate_release_notes: true

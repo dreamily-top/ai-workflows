@@ -1,15 +1,44 @@
 ---
 name: repo-map-generator
-description: 降级为辅助性深潜工具。仅针对特定模块提取抽象语法树（AST），用于辅助精细的系统设计，严禁用于项目整体宏观理解。
+description: 只读局部代码侦察技能。用于在设计或执行前生成指定文件/目录的 AST 地图，并用脚本校验地图是否过期；不得扫描仓库根目录，不得修改代码。
 ---
-# Repository Map Generator (AST 局部解析钻探机)
+# 局部代码侦察
 
-## Core Purpose
-此技能已经从"必经的全局扫描站"降级为"按需呼叫的局部侦察无人机"。它利用 AST（抽象语法树）为大模型提供精确到函数签名的文件结构，但为了避免 token 和时间浪费，它**只在明确缩小范围后使用**。
+## 必须使用的场景
 
-## Instructions
+- 规格书涉及不熟悉的模块。
+- 需求跨前后端、接口、数据模型或状态管理。
+- 上次生成地图后发生过提交、目标文件修改或路径移动。
+- 分析需要依赖函数、类型、导出结构。
 
-1. **克制调用 (Restraint)**：如果是想了解项目整体干嘛的，请调用 `project-context`。只有当 `system-architect` 或你在执行具体任务时，发现对某个局部目录内部到底导出了哪些钩子、函数接口两眼一抹黑时，才被允许启动此技能。
-2. **严控准星 (Targeted Scan)**：运行同层目录的 `scripts/ast_extractor.js <具体的子目录或具体文件>`。绝对不允许运行 `ast_extractor.js ./` 去扫根目录引发爆炸。
-3. **临时投递 (Volatile Output)**：结果可以导入 `.ai/tmp/local_map.txt`，供 `system-architect` 设计类图或组件契约时借鉴参考。
-4. **阅后即焚 (Ephemeral)**：明确告知系统该文件只服务于本次设计，不用留档。
+## 强制流程
+
+1. 先选定具体文件或子目录，禁止使用仓库根目录。
+2. 生成地图：
+
+```bash
+node repo-map-generator/scripts/ast_extractor.js <具体文件或目录> --out .ai/tmp/repo-map.md
+```
+
+3. 使用地图前必须校验：
+
+```bash
+node repo-map-generator/scripts/check_map_freshness.js .ai/tmp/repo-map.md
+```
+
+4. 校验失败就重新生成地图。没有新鲜地图，不允许继续做结构分析。
+
+## 过期判定
+
+`check_map_freshness.js` 会拦截这些情况：
+
+- 地图文件不存在。
+- 地图缺少元数据。
+- 当前 git 提交号和生成地图时不同。
+- 地图记录的任意文件不存在或 hash 变化。
+
+## 输出用途
+
+- 只给本次规格书或执行前确认使用。
+- 不写入长期记忆。
+- 不替代测试、类型检查或代码审查。
